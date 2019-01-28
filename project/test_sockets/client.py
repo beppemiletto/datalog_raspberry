@@ -1,21 +1,21 @@
 # -*- coding: utf-8 -*-
 import socket
 import os, sys
-from module_declarations import MyDataFormat, SAMPLING_BASE_TIME, SCREEN_POS, BYTE_N
+from module_declarations import MyDataFormat, SAMPLING_BASE_TIME, SCREEN_POS, BYTE_N, CWD_PATH
 import time, datetime
 
 def print_xy(x,y,contents=None,color=None):
     sys.stdout.write("\x1b7\x1b[%d;%df%s\x1b8" % (x, y, contents))
     sys.stdout.flush()
 
-cycles= 14400
+cycles= 10
 bt = SAMPLING_BASE_TIME.total_seconds()
 sleep_time =bt
 lag_correction = 0.0
 print("Connecting...")
-if os.path.exists("/home/beppe/project/test_sockets/python_unix_sockets_example"):
+if os.path.exists(os.path.join(CWD_PATH,"python_unix_sockets_example")):
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    client.connect("/home/beppe/project/test_sockets/python_unix_sockets_example")
+    client.connect(os.path.join(CWD_PATH,"python_unix_sockets_example"))
     print("Ready.")
     print("Ctrl-C to quit.")
     print("Sending 'DONE' shuts down the server and quits.")
@@ -75,7 +75,8 @@ if os.path.exists("/home/beppe/project/test_sockets/python_unix_sockets_example"
                     print_xy(SCREEN_POS[BYTE_N+4][0], SCREEN_POS[BYTE_N+4][1]+12, "{:09.6f}".format(et_max.total_seconds()))
                     print_xy(SCREEN_POS[BYTE_N+5][0], SCREEN_POS[BYTE_N+5][1]+12, "{:09.6f}".format(lag_correction))
 
-
+                    if sleep_time < 0.0:
+                        sleep_time=bt
                     time.sleep(sleep_time)
         except KeyboardInterrupt as k:
             print("Client Shutting down.")

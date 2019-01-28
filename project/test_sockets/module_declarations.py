@@ -1,5 +1,10 @@
+from os import path, getcwd
 from construct import Struct,Const, Array, Byte, Int16ub,Int32ub
 from datetime import timedelta
+
+# Current working directory
+CWD_PATH = getcwd()
+
 # Constants
 BYTE_N = 32
 SAMPLING_BASE_TIME = timedelta(0, 1,0)

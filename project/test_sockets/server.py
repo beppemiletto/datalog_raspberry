@@ -2,7 +2,7 @@
 import socket
 import os
 import datetime, time
-from module_declarations import MyDataFormat, SAMPLING_BASE_TIME, BYTE_N
+from module_declarations import MyDataFormat, SAMPLING_BASE_TIME, BYTE_N, CWD_PATH
 import random
 
 def rand_array_gen(length=1):
@@ -12,12 +12,12 @@ def rand_array_gen(length=1):
     return array       
     
 
-if os.path.exists("/home/beppe/project/test_sockets/python_unix_sockets_example"):
-    os.remove("/home/beppe/project/test_sockets/python_unix_sockets_example")
+if os.path.exists(os.path.join(CWD_PATH,"python_unix_sockets_example")):
+    os.remove(os.path.join(CWD_PATH,"python_unix_sockets_example"))
 
 print("Opening socket...")
 server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-server.bind("/home/beppe/project/test_sockets/python_unix_sockets_example")
+server.bind(os.path.join(CWD_PATH,"python_unix_sockets_example"))
 
 
 random.seed(int(time.time()))
@@ -54,5 +54,6 @@ conn.close()
 print("Connect Server Shutting down...")
 server.close()
 print("Server Shutting down...")
-os.remove("/home/beppe/project/test_sockets/python_unix_sockets_example")
+os.remove(os.path.join(CWD_PATH, "python_unix_sockets_example"))
 print("Done")
+
