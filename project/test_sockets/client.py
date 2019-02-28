@@ -8,7 +8,7 @@ def print_xy(x,y,contents=None,color=None):
     sys.stdout.write("\x1b7\x1b[%d;%df%s\x1b8" % (x, y, contents))
     sys.stdout.flush()
 
-cycles= 10
+cycles= 3600*12
 bt = SAMPLING_BASE_TIME.total_seconds()
 sleep_time =bt
 lag_correction = 0.0
