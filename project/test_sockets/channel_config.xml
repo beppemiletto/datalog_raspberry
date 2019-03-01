@@ -26,6 +26,7 @@
     <sn>GT974/096</sn>
   </InputType>
   <InputType type="PCAN">
+     <!-- TODO CAN develop channels configuration-->
     <ch ph="" name = "">Learning XML</ch>
     <author>Erik T. Ray</author>
     <year>2003</year>

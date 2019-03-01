@@ -53,7 +53,10 @@ def KeyStatus():
     return key_status
 
 
-
+#TODO develop the channels linearization engine
+#TODO develop the XML config parser as per xmltest.py
+#TODO develop the LED blinking and fixed
+#TODO develop the power latch management
 
 
 

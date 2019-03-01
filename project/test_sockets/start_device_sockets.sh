@@ -16,11 +16,11 @@ sleep 2.5s
 source ~/project/venv/bin/activate
 
 
-cd ~/project/datalog_raspberry/project/test_sockets/
+#cd ~/project/datalog_raspberry/project/test_sockets/
 
-pwd
+#pwd
 
-python PCAN_server_socket.py
+#python PCAN_server_socket.py
 
 
 sleep 2.5
