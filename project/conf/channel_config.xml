@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RPIDatalog_channels>
+  <DatalogFilenamePrefix prefix="MDS_snP051_">Data Filename Prefix</DatalogFilenamePrefix>
+  <!--  Thermocouple device Picolog -->
+  <!--  ATTRIBUTE MEANING:
+        ph = physical channel of device - connection
+        name = mnemonic name of the signal located in channel of device
+        um = measure unit of the signal located in channel of device
+        type = type of the sensor - in this TC08 case the type of thermocouple (K,R,S,T,J....)
+        offset = offset of the straight line for linearize the value of the signal from raw data to ingegneristics
+        slope = slope of the straight line for linearize the value of the signal from raw data to ingegneristics
+        format = numerical format of the variable container of the raw data
+        col = position of the column in the recorded file
+        -->
+  <InputType type="TC08">
+    <ch ph="01" name = "TC_HPH_GAS_IN"  um="degC" type="K" offset="0" slope="1" format="float" col="01" hw="tc08" >TC08_CH01</ch>
+    <ch ph="02" name = "TC_HPH_GAS_OUT" um="degC" type="K" offset="0" slope="1" format="float" col="02" hw="tc08" >TC08_CH02</ch>
+    <ch ph="03" name = "TC_HPH_H2O_IN"  um="degC" type="K" offset="0" slope="1" format="float" col="03" hw="tc08" >TC08_CH03</ch>
+    <ch ph="04" name = "TC_HPH_H2O_OUT" um="degC" type="K" offset="0" slope="1" format="float" col="04" hw="tc08" >TC08_CH04</ch>
+    <ch ph="05" name = "TC_HPH_BODY"    um="degC" type="K" offset="0" slope="1" format="float" col="05" hw="tc08" >TC08_CH05</ch>
+    <ch ph="06" name = "TC_MDS_GAS_OUT" um="degC" type="K" offset="0" slope="1" format="float" col="06" hw="tc08" >TC08_CH06</ch>
+    <ch ph="07" name = "TC_TANK"        um="degC" type="K" offset="0" slope="1" format="float" col="07" hw="tc08" >TC08_CH07</ch>
+    <ch ph="08" name = "TC_EXH"         um="degC" type="K" offset="0" slope="1" format="float" col="08" hw="tc08" >TC08_CH07</ch>
+    <sn>A0061/874</sn>
+  </InputType>
+
+  <!--  Analog inputs device device Picolog -->
+  <!--  ATTRIBUTE MEANING:
+        ph = physical channel of device - connection
+        name = mnemonic name of the signal located in channel of device
+        um = measure unit of the signal located in channel of device
+        type = type of the sensor - PS for pressure sensor, PT100 for temperature sensor, VFM for Frequency to Voltage
+        offset = offset of the straight line for linearize the value of the signal from raw data to ingegneristics
+        slope = slope of the straight line for linearize the value of the signal from raw data to ingegneristics
+        format = numerical format of the variable container of the raw data
+        col = position of the column in the recorded file
+        -->
+  <InputType type="PL1012">
+    <ch ph="01" name = "PS_HPH_PCNG_IN"   um="barG" type="PS" offset="-32.50" slope="130" format="int16" col="09" hw="pl1012" >PL1012_CH01</ch>
+    <ch ph="02" name = "PS_MDS_PGAS_OUT"  um="barA" type="PS" offset="-0.6875" slope="6.75" format="int16" col="10" hw="pl1012" >PL1012_CH02</ch>
+    <ch ph="03" name = "PS_MDS_P1S"       um="barG" type="PS" offset="-32.50" slope="130" format="int16" col="11" hw="pl1012" >PL1012_CH03</ch>
+    <ch ph="04" name = "PS_MDS_PTANK"     um="barG" type="PS" offset="-32.50" slope="130" format="int16" col="12" hw="pl1012" >PL1012_CH04</ch>
+    <ch ph="05" name = "TR_MDS_TRNG_IN"   um="degC" type="PT100" offset="-70" slope="76" format="int16" col="13" hw="pl1012" >PL1012_CH05</ch>
+    <ch ph="06" name = "TR_MDS_TRH2O_IN"  um="degC" type="PT100" offset="-70" slope="76" format="int16" col="14" hw="pl1012" >PL1012_CH06</ch>
+    <ch ph="07" name = "TR_MDS_TRH2O_OUT" um="degC" type="PT100" offset="-70" slope="76" format="int16" col="15" hw="pl1012" >PL1012_CH07</ch>
+    <ch ph="08" name = "FM_HPH_QH2O"      um="l/min" type="VFM"  offset="0"    slope="10" format="int16" col="16" hw="pl1012" >PL1012_CH08</ch>
+    <ch ph="09" name = "TR_MDS_TRENV"     um="degC" type="PT100" offset="-70" slope="76" format="int16" col="17" hw="pl1012" >PL1012_CH09</ch>
+    <ch ph="10" name = "TR_MDS_TRBODY"    um="degC" type="PT100" offset="-70" slope="76" format="int16" col="18" hw="pl1012" >PL1012_CH10</ch>
+
+    <sn>GT974/096</sn>
+  </InputType>
+
+  <InputType type="PCAN">
+  <!-- CAN Interface device PEAK PCANUSB -->
+     <!--
+     ATTRIBUTE MEANING:
+        signal_n = CAN signal number
+        pgn = PGN of the CAN message Header in which the signal is included
+        name = mnemonic name of the signal located in channel of device
+        bits = the length of the data in number of bits
+        byte = the byte number starting from 1 of the data field of the CAN message that includes the signal
+        bit_offset = the offset iside the byte for start reading the value starting from 0
+        offset = offset of the straight line for linearize the value of the signal from raw data to ingegneristics
+        um = measure unit of the CAN signal
+        resolution = weight of the bit from raw data to ingegneristics
+        col = position of the column in the recorded file
+     -->
+    <ch signal_n="01" pgn="FE6C" name = "Tachograph_Vehicle_Speed" bits="16" byte="7" bit_offset = "0" offset="0" um="kmph" resolution="0.00390625" col="19" hw="pcan" >CAN01</ch>
+    <ch signal_n="02" pgn="F005" name = "Transmission_Current_Gear" bits="8" byte="4" bit_offset = "0" offset="0" um="n" resolution="1" col="20" hw="pcan" >CAN02</ch>
+    <ch signal_n="03" pgn="FEEE" name = "Engine_Coolant_Temperature" bits="8" byte="1" bit_offset = "0" offset="-40" um="degC" resolution="1" col="21" hw="pcan" >CAN03</ch>
+    <ch signal_n="04" pgn="FEEE" name = "Engine_Fuel_Temperature" bits="8" byte="2" bit_offset = "0" offset="-40" um="degC" resolution="1" col="22" hw="pcan" >CAN04</ch>
+    <ch signal_n="05" pgn="FEEE" name = "Engine_Oil_Temperature" bits="16" byte="3" bit_offset = "0" offset="-273" um="degC" resolution="0.03125" col="23" hw="pcan" >CAN04</ch>
+    <ch signal_n="06" pgn="FEA4" name = "Engine_ECU_Temperature" bits="16" byte="3" bit_offset = "0" offset="-273" um="degC" resolution="0.03125" col="24" hw="pcan" >CAN06</ch>
+    <ch signal_n="07" pgn="F004" name = "Engine_Speed" bits="16" byte="4" bit_offset = "0" offset="0" um="rpm" resolution="0.125" col="25" hw="pcan" >CAN07</ch>
+    <ch signal_n="08" pgn="F004" name = "Engine_Demand_Percent_Torque" bits="8" byte="8" bit_offset = "0" offset="0" um="perc" resolution="1" col="26" hw="pcan" >CAN08</ch>
+    <ch signal_n="09" pgn="FEF6" name = "Engine_Boost_Pressure" bits="8" byte="2" bit_offset = "0" offset="0" um="kPa" resolution="2" col="27" hw="pcan" >CAN09</ch>
+    <ch signal_n="10" pgn="FEF6" name = "Engine_Intake_Manifold_Temperature" bits="8" byte="3" bit_offset = "0" offset="-40" um="degC" resolution="1" col="28" hw="pcan" >CAN10</ch>
+    <ch signal_n="11" pgn="FEF6" name = "Engine_Intake_Manifold_Pressure" bits="8" byte="4" bit_offset = "0" offset="0" um="kPa" resolution="2" col="29" hw="pcan" >CAN11</ch>
+    <ch signal_n="12" pgn="FEF6" name = "Engine_Exhaust_Temperature" bits="16" byte="6" bit_offset = "0" offset="-273" um="degC" resolution="0.03125" col="30" hw="pcan" >CAN12</ch>
+    <ch signal_n="13" pgn="FEF2" name = "Engine_Fuel_Rate" bits="16" byte="1" bit_offset = "0" offset="0" um="kgh" resolution="0.05" col="31" hw="pcan" >CAN13</ch>
+    <ch signal_n="14" pgn="FF7F" name = "Spark_Advance" bits="8" byte="1" bit_offset = "0" offset="-20" um="deg" resolution="0.5" col="32" hw="pcan" >CAN14</ch>
+    <ch signal_n="15" pgn="FF7F" name = "zsMap" bits="8" byte="2" bit_offset = "0" offset="0" um="mbar" resolution="10" col="33" hw="pcan" >CAN15</ch>
+    <ch signal_n="16" pgn="FF7F" name = "asPre" bits="8" byte="3" bit_offset = "0" offset="0" um="mbar" resolution="10" col="34" hw="pcan" >CAN16</ch>
+    <ch signal_n="17" pgn="FF7F" name = "zsPrail" bits="8" byte="4" bit_offset = "0" offset="0" um="mbar" resolution="60" col="35" hw="pcan" >CAN17</ch>
+    <ch signal_n="18" pgn="FF7F" name = "asAirMain" bits="8" byte="7" bit_offset = "0" offset="0" um="kgh" resolution="5" col="36" hw="pcan" >CAN18</ch>
+    <ch signal_n="19" pgn="FF7F" name = "qsTinj" bits="8" byte="8" bit_offset = "0" offset="0" um="us" resolution="280" col="37" hw="pcan" >CAN19</ch>
+    <ch signal_n="20" pgn="FF80" name = "WasteGateDC" bits="5" byte="1" bit_offset = "0" offset="0" um="perc" resolution="4" col="38" hw="pcan" >CAN20</ch>
+    <ch signal_n="21" pgn="FF80" name = "EngineMode" bits="3" byte="1" bit_offset = "5" offset="0" um="state" resolution="1" col="39" hw="pcan" >CAN21</ch>
+    <ch signal_n="22" pgn="FF80" name = "fsKO2" bits="5" byte="2" bit_offset = "0" offset="0.75" um="k" resolution="0.03125" col="40" hw="pcan" >CAN22</ch>
+    <ch signal_n="23" pgn="FF80" name = "usCorrAdat" bits="5" byte="3" bit_offset = "0" offset="0.75" um="k" resolution="0.03125" col="41" hw="pcan" >CAN23</ch>
+
+  </InputType>
+</RPIDatalog_channels>

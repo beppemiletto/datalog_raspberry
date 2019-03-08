@@ -1,11 +1,13 @@
 from os import path, getcwd
-from construct import Struct,Sequence ,Const, Array, Byte, Int16ub, Int16ul,Int32ub, Int8ub, Float32l
+from construct import Struct,Sequence ,Const, Array, Byte, Int16ub, Int16ul,Int32ub, Int32ul, Int32un, Int8ub, Float32l, PaddedString
 from datetime import timedelta
 
 # Running Environments
 PC_OFFLINE = 0
 RPI_PRODUCTION  = 1
 RPI_DEVELOPMENT = 2
+
+
 
 # Current working directory
 CWD_PATH = getcwd()
@@ -38,7 +40,8 @@ PL1012DataFormat = Struct("data" / Array(PL1012BYTE_N, Int16ul) )
 TC08FLOAT_N = 9
 TC08DataFormat = Struct("data" / Array(TC08FLOAT_N,Float32l))
 PEAK_MSGS = 6
-PEAKDataFormat = Array(PEAK_MSGS, Sequence(Int32ub, Array(8, Int8ub)))
+CANREAD_TIMEOUT = 0.600000
+PEAKDataFormat = Array(PEAK_MSGS, Sequence(PaddedString(11, 'utf-8'), Array(8, Int8ub)))
 
 
 

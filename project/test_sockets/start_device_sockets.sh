@@ -13,14 +13,15 @@ sleep 2.5s
 
 ~/project/picolog/picosdk-c-examples/usbtc08/linux-build-files/usbtc08Con TC08874.socket &
 
+echo "\n\nStarting PCAN socket"
 source ~/project/venv/bin/activate
 
 
-#cd ~/project/datalog_raspberry/project/test_sockets/
+cd ~/project/datalog_raspberry/project/test_sockets/
 
-#pwd
+pwd
 
-#python PCAN_server_socket.py
+python PCAN_server_socket.py &
 
 
 sleep 2.5
