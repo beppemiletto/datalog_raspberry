@@ -7,13 +7,14 @@ PC_OFFLINE = 0
 RPI_PRODUCTION  = 1
 RPI_DEVELOPMENT = 2
 
-
+# DATA file directory
+DATA_PATH = "/home/pi/DATA"
 
 # Current working directory
 CWD_PATH = getcwd()
 
 # Socket dir end filenames
-SKT_PATH = "/home/gmiletto/project/datalog_raspberry/sockets"
+SKT_PATH = path.join(CWD_PATH,"sockets")
 SKT_PL1000 = "PL1000"
 SKT_TC08 = "TC08"
 SKT_PEAK = "PEAK"

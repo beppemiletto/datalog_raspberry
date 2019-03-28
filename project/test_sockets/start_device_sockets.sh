@@ -3,32 +3,32 @@
 echo "Starting Pico and Peak Hardware's sockets processes for Datalogger"
 echo "\nStarting Picolo PL1012"
 
-cd ~/project/datalog_raspberry/sockets/
+cd ~/datalog_raspberry/project/sockets/
 
-~/project/picolog/picosdk-c-examples/pl1000/linux-build-files/pl1000Con PL1000096.socket &
+~/pico_sdk/pl1000/linux-build-files/pl1000Con PL1000096.socket &
 
 echo "\n\nStarting Picolo PL1012"
 
-sleep 2.5s
+sleep 3.5s
 
-~/project/picolog/picosdk-c-examples/usbtc08/linux-build-files/usbtc08Con TC08874.socket &
+~/pico_sdk/usbtc08/linux-build-files/usbtc08Con TC08874.socket &
 
 echo "\n\nStarting PCAN socket"
-source ~/project/venv/bin/activate
+# source ~/venv/bin/activate
 
 
-cd ~/project/datalog_raspberry/project/test_sockets/
+cd ~/datalog_raspberry/project/
 
 pwd
 
-python PCAN_server_socket.py &
+python3 test_sockets/PCAN_server_socket.py &
 
 
-sleep 2.5
+sleep 3.5
 
 
 
-cd ~/project/datalog_raspberry/project/test_sockets/
+cd ~/datalog_raspberry/project/test_sockets/
 
 pwd
 

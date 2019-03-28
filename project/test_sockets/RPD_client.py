@@ -3,7 +3,7 @@ import socket
 import os, sys
 from module_declarations import PL1012DataFormat, PL1012BYTE_N, SAMPLING_BASE_TIME, SCREEN_POS, BYTE_N, CWD_PATH
 from module_declarations import SKT_PATH, SKT_PL1000, SKT_TC08, HW_SN_EN, TC08DataFormat, TC08FLOAT_N, PEAKDataFormat
-from module_declarations import PC_OFFLINE, RPI_DEVELOPMENT, RPI_PRODUCTION
+from module_declarations import PC_OFFLINE, RPI_DEVELOPMENT, RPI_PRODUCTION, DATA_PATH
 import time
 import datetime
 import xml.etree.ElementTree
@@ -22,10 +22,11 @@ class BlinkPowerLed (threading.Thread):
     def run(self):
         print("Starting " + self.name)
         while power_latch:
-            set_power_led(LED_OFF)
-            time.sleep(0.25)
-            set_power_led(LED_ON)
-            time.sleep(0.25)
+            gpio.output(gpio_powerled_out, LED_OFF)
+            time.sleep(0.20)
+            gpio.output(gpio_powerled_out, LED_ON)
+            time.sleep(0.20)
+        gpio.output(gpio_powerled_out, LED_OFF)
         print("Exiting " + self.name)
 
 
@@ -40,9 +41,9 @@ class BlinkLoggingLed (threading.Thread):
     def run(self):
         print("Starting " + self.name)
         while logging_led_status:
-            set_logging_led(LED_OFF)
+            gpio.output(gpio_logled_out, LED_OFF)
             time.sleep(0.5)
-            set_logging_led(LED_ON)
+            gpio.output(gpio_logled_out, LED_OFF)
             time.sleep(0.5)
         print("Exiting " + self.name)
 
@@ -52,34 +53,6 @@ class BlinkLoggingLed (threading.Thread):
 def print_xy(x, y, contents=None, color=None):
     sys.stdout.write("\x1b7\x1b[%d;%df%s\x1b8" % (x, y, contents))
     sys.stdout.flush()
-
-
-# Function for detecting the Key status from RPI GPIO
-# The key status is connected to Raspberry GPIO 3
-def key_status():
-    key_status_detected = GPIO.input(3)
-    return key_status_detected
-
-
-# Function for setting the power status indicator LED mode
-# The power status indicator LED is connected to Raspberry GPIO 9
-def set_power_led(status):
-    GPIO.output(9,status)
-
-
-# Function for setting the logging status indicator LED mode
-# The logging status indicator LED is connected to Raspberry GPIO 7
-def set_logging_led(status):
-    GPIO.output(7,status)
-    return status
-
-
-# Function for setting the power latch enable mode
-# The power latch enable  is connected to Raspberry GPIO 5
-def set_power_latch(status):
-    GPIO.output(5,status)
-    return status
-
 
 # Function for linearize signal before writing records to CSV file
 def linearise_signal(raw_value,parameters):
@@ -103,8 +76,8 @@ def linearise_signal(raw_value,parameters):
                 raw_value_int = lsbyte+msbyte*2**8
                 linearized_value = float(raw_value_int)*resolution+offset
             except:
-                print("\n16 bits raw_value not convertible ='{}'".format(raw_value))
-                print("for parameter ='{}'\n".format(parameters))
+                # print("\n16 bits raw_value not convertible ='{}'".format(raw_value))
+                # print("for parameter ='{}'\n".format(parameters))
                 linearized_value= None
         else:
             #TODO CAN linearization for data lenth less than 8 bits
@@ -121,46 +94,53 @@ def send_command(socket_client=None,command=None):
     socket_client.send(bcommand)
 
 
-environment = PC_OFFLINE
+environment = RPI_PRODUCTION
 
 if environment == PC_OFFLINE:
     bt = SAMPLING_BASE_TIME.total_seconds()
     sleep_time = bt
     lag_correction = 0.0
     full_connect= False
-    from RPiSim.GPIO import GPIO
+    from RPiSim.GPIO import gpio
 
 
 elif environment == RPI_PRODUCTION:
+    import RPi.GPIO as gpio
     bt = SAMPLING_BASE_TIME.total_seconds()
     sleep_time = bt
     lag_correction = 0.0
     full_connect = False
 
-GPIO.setmode(GPIO.BCM)
+# setting the GPIO of Raspberry to datalog usages
+gpio.setwarnings(False)
+gpio.setmode(gpio.BCM)
 KEY_ON = True
 KEY_OFF = False
-LED_ON = GPIO.HIGH
-LED_OFF = GPIO.LOW
+LED_ON = gpio.HIGH
+LED_OFF = gpio.LOW
 
-GPIO.setup(3, GPIO.IN, initial=GPIO.HIGH, pull_up_down=GPIO.PUD_UP)     # this is the key sense input
-GPIO.setup(5, GPIO.OUT, initial=GPIO.HIGH, pull_up_down=GPIO.PUD_DOWN)   # this the power latch enable output
-logging_led_status = GPIO.LOW
-GPIO.setup(7, GPIO.OUT, initial=logging_led_status, pull_up_down=GPIO.PUD_DOWN)  # this is the Datalogging running blinking led
-GPIO.setup(9,GPIO.OUT, initial=GPIO.LOW, pull_up_down=GPIO.PUD_DOWN)   # this is the power state led output
+gpio_key_sense = 16
+gpio.setup(gpio_key_sense, gpio.IN, pull_up_down=gpio.PUD_DOWN)     # this is the key sense input set pull down default
 
-if key_status() == KEY_ON:
-    set_power_led(GPIO.HIGH)
-    power_latch = set_power_latch(GPIO.HIGH)
+gpio_pwrltch_out = 20
+gpio.setup(gpio_pwrltch_out, gpio.OUT, initial=gpio.HIGH)   # this the power latch enable output - initialised to HIGH
+
+gpio_logled_out = 21
+logging_led_status = gpio.LOW
+gpio.setup(gpio_logled_out, gpio.OUT, initial=logging_led_status)  # this is the Datalogging running blinking led
+
+gpio_powerled_out = 19
+gpio.setup(gpio_powerled_out, gpio.OUT, initial=gpio.LOW)   # this is the power state led output
+
+if gpio.input(gpio_key_sense) == KEY_ON:
+    gpio.output(gpio_powerled_out, True)
+    gpio.output(gpio_pwrltch_out, True)
 
 else:
-    set_power_led(GPIO.LOW)
+    gpio.output(gpio_powerled_out, False)
+    gpio.output(gpio_pwrltch_out, False)
+    print("Key status OFF = pin GPIO{}".format(gpio_key_sense))
     sys.exit(2)
-
-
-#TODO develop the LED blinking and fixed
-#TODO develop the power latch management
-
 
 # calculates required connections total number
 total_connection_req_conf = 0
@@ -259,11 +239,10 @@ for type in root:
 del root, tree, type, ch
 # END OF CHANNELS CONFIG PARSER
 
-#TODO write the csv writer for file container of data
 file_name_suffix = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
 file_name = FILENAME_PREFIX+file_name_suffix+'.csv'
-csv_file_name = os.path.join(CWD_PATH,file_name)
-csv_file_header= open(csv_file_name,mode='w', encoding='utf-8')
+csv_file_name = os.path.join(DATA_PATH, file_name)
+csv_file_header= open(csv_file_name, mode='w', encoding='utf-8')
 csv_file = csv.writer(csv_file_header, dialect='excel', delimiter=',', quotechar="'", quoting=csv.QUOTE_MINIMAL, lineterminator='\n')
 del file_name, file_name_suffix, FILENAME_PREFIX
 
@@ -282,11 +261,11 @@ del head_row, col_head
 # MAIN LOOP OF DATA LOGGING
 first_cycle = True
 #check the staus of the Key input - if KEY_OFF jump to program exit
-while key_status() == KEY_ON:
+while gpio.input(gpio_key_sense) == KEY_ON:
     try:
         #for cycle in range(cycles):
         if first_cycle:
-
+            gpio.output(gpio_logled_out, True)
             # Create new threads
             thread2 = BlinkLoggingLed(2, "Blink-LogLed", 1)
             logging_led_status = True
@@ -307,6 +286,7 @@ while key_status() == KEY_ON:
             first_cycle=False
 
         else:
+            gpio.output(gpio_logled_out, True)
             answ = client_PL1012.recv(24)
 
             answ_tc08 = client_TC08.recv(256)
@@ -318,7 +298,7 @@ while key_status() == KEY_ON:
             CAN_row_Data_parser = csv.reader(answPEAK.decode().split('\n'), delimiter=',')
             for value in CAN_row_Data_parser:
                 CAN_row_Data.append(value)
-                print('\t'.join(value))
+                # print('\t'.join(value))
 
             temperatures_data = TC08DataFormat.parse(answ_tc08)
 
@@ -345,6 +325,7 @@ while key_status() == KEY_ON:
             #          "Max {:09.6f}".format(et_max.total_seconds()))
             # print_xy(SCREEN_POS[start_time_data + 5][0], SCREEN_POS[start_time_data + 5][1] + 12,
             #          "Lag corr {:09.6f}".format(lag_correction))
+            gpio.output(gpio_logled_out, False)
             cycle +=1
             t_now = datetime.datetime.now()
             et = t_now -t_old
@@ -402,7 +383,10 @@ while key_status() == KEY_ON:
 print("\nClient Shutting down.\n")
 
 logging_led_status = False
-time.sleep(2)
+time.sleep(1)
+
+# setting power latch status to True - shutting down procedure initiated
+power_latch = True
 
 # Create new threads
 thread1 = BlinkPowerLed(1, "Thread-1", 1)
@@ -420,14 +404,16 @@ client_TC08.close()
 send_command(client_PEAK, 'X')
 client_PEAK.close()
 
-GPIO.cleanup()
-
 csv_file_header.close()
 
-power_latch = False
-thread1.join()
-time.sleep(5)
-set_power_latch(GPIO.LOW)
+time.sleep(2.5)
 
+power_latch = False
+
+thread1.join()
+time.sleep(2.5)
+print("gpio power latch led set False, pin {}".format(gpio_pwrltch_out))
+
+gpio.output(gpio_pwrltch_out, LED_OFF)
 
 sys.exit(0)

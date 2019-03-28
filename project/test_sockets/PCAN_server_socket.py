@@ -84,12 +84,16 @@ class PCANBasicExample(object):
     ##
     def destroy(self):
         # close and cancel the socket
-        pass
-        # self.m_Parent.destroy()
+        self.server.close()
+        try:
+            os.remove(self.socket_file)
+            print("Socket file {} successfully deleted!".format(self.socket_file))
+            del self.socket_file
+        except:
+            print("Peak socket file not removed exception ")
 
-        ## Message loop
 
-    ##
+    ## Main Loop of working
     def loop(self):
         ## Initialize the messages container
         ##
@@ -141,19 +145,19 @@ class PCANBasicExample(object):
                 answ = self.conn.recv(1)
                 if answ == b'S':
                     self.conn.send(response.encode('utf-8'))
+                    self.btnReset_Click()
                 elif answ == b'X':
                     print("Termination request received from client - Shutting down")
                     return
+                else:
+                    continue
             except SystemExit:
                 # Tkinter uses SystemExit to exit
                 self.exit = 1
                 return
             except KeyboardInterrupt:
-                if tkMessageBox.askquestion('Interrupt', 'Really Quit?') == 'yes':
-                    # self.tk.eval('exit')
-                    self.exit = 1
-                    return
-                continue
+                print("Termination request for KeyboardInterrupt received - Shutting down")
+                return
             except:
                 # Otherwise it's some other error
                 t, v, tb = sys.exc_info()
@@ -255,9 +259,10 @@ class PCANBasicExample(object):
         if os.path.exists(os.path.join(SKT_PATH,SKT_PEAK+'.socket')):
             os.remove(os.path.join(SKT_PATH,SKT_PEAK+'.socket'))
 
-        print("Opening socket...")
+        print("Opening socket...{}".format(os.path.join(SKT_PATH,SKT_PEAK+'.socket')))
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.server.bind(os.path.join(SKT_PATH,SKT_PEAK+'.socket'))
+        self.socket_file = os.path.join(SKT_PATH,SKT_PEAK+'.socket')
+        self.server.bind(self.socket_file)
 
     ## Client - Server Acknoledge Unix Socket
     ##
@@ -348,50 +353,6 @@ class PCANBasicExample(object):
         #
         self.btnGetVersions_Click()
         self.m_Connected = bConnected
-        # if bConnected:
-        #     stsConnected = ACTIVE
-        #     stsNotConnected = DISABLED
-        # else:
-        #     stsConnected = DISABLED
-        #     stsNotConnected = ACTIVE
-        #
-        # # Buttons
-        # #
-        # self.btnInit['state'] = stsNotConnected
-        # if (self.m_ReadingRDB.get() == 0) and bConnected:
-        #     self.btnRead['state'] = ACTIVE
-        # else:
-        #     self.btnRead['state'] = DISABLED
-        # self.btnWrite['state'] = stsConnected;
-        # self.btnRelease['state'] = stsConnected
-        # self.btnFilterApply['state'] = stsConnected
-        # self.btnFilterQuery['state'] = stsConnected
-        # self.btnGetVersions['state'] = stsConnected
-        # self.btnHwRefresh['state'] = stsNotConnected
-        # self.btnStatus['state'] = stsConnected
-        # self.btnReset['state'] = stsConnected
-        #
-        # # ComboBoxs
-        # #
-        # self.cbbBaudrates['state'] = stsNotConnected;
-        # self.cbbChannel['state'] = stsNotConnected;
-        # self.cbbHwType['state'] = stsNotConnected;
-        # self.cbbIO['state'] = stsNotConnected;
-        # self.cbbInterrupt['state'] = stsNotConnected;
-        #
-        # if ENABLE_CAN_FD:
-        #     # Check-Buttons
-        #     #
-        #     self.chbCanFD['state'] = stsNotConnected;
-        #
-        # # Hardware configuration and read mode
-        # #
-        # if not bConnected:
-        #     self.cbbChannel_SelectedIndexChanged(self.cbbChannel['value'])
-        #     self.tmrDisplayManage(False)
-        # else:
-        #     self.rdbTimer_CheckedChanged()
-        #     self.tmrDisplayManage(True)
 
     def FormatChannelName(self, handle, isFD=False):
         if handle < 0x100:
@@ -687,24 +648,6 @@ class PCANBasicExample(object):
         if not filterRet[0]:
             return
 
-            # Configures the message filter for a custom range of messages
-        #
-        # if self.m_FilteringRDB.get() == 2:
-        #     # Sets the custom filter
-        #     #
-        #     result = self.m_objPCANBasic.FilterMessages(self.m_PcanHandle,
-        #                                                 int(self.m_IdFromNUD.get()),
-        #                                                 int(self.m_IdToNUD.get()),
-        #                                                 filterMode)
-            # If success, an information message is written, if it is not, an error message is shown
-            #
-            if result == PCAN_ERROR_OK:
-                print("The filter was customized. IDs from {0:X} to {1:X} will be received".format(
-                    int(self.m_IdFromNUD.get()), int(self.m_IdToNUD.get())))
-            else:
-                print("Error!", self.GetFormatedError(result))
-
-            return
 
         # The filter will be full opened or complete closed
         #
@@ -1164,96 +1107,6 @@ class PCANBasicExample(object):
         if result[0] != PCAN_ERROR_OK:
             print("Error!", self.GetFormatedError(result[0]))
 
-    ## Button btnMsgClear handler
-    ##
-    def btnMsgClear_Click(self, *args):
-        # The information contained in the messages List-View
-        # is cleared
-        #
-        with self._lock:
-            self.lstMessages.delete(0, END)
-            self.m_LastMsgsList = []
-
-    ## Button btnInfoClear handler
-    ##
-    def btnInfoClear_Click(self, event=None):
-        # The information contained in the Information List-Box
-        # is cleared
-        #
-        self.lbxInfo.delete(0, END)
-
-    def WriteFrame(self):
-        # We create a TPCANMsg message structure
-        #
-        CANMsg = TPCANMsg()
-
-        # We configurate the Message.  The ID,
-        # Length of the Data, Message Type and the data
-        #
-        CANMsg.ID = int(self.m_IDTXT.get(), 16)
-        CANMsg.LEN = int(self.m_LengthNUD.get())
-        CANMsg.MSGTYPE = PCAN_MESSAGE_EXTENDED if self.m_ExtendedCHB.get() else PCAN_MESSAGE_STANDARD
-
-        # If a remote frame will be sent, the data bytes are not important.
-        #
-        if self.m_RemoteCHB.get():
-            CANMsg.MSGTYPE |= PCAN_MESSAGE_RTR.value
-        else:
-            # We get so much data as the Len of the message
-            #
-            for i in range(CANMsg.LEN):
-                CANMsg.DATA[i] = int(self.m_DataEdits[i].get(), 16)
-
-        # The message is sent to the configured hardware
-        #
-        return self.m_objPCANBasic.Write(self.m_PcanHandle, CANMsg)
-
-    def WriteFrameFD(self):
-        # We create a TPCANMsgFD message structure
-        #
-        CANMsg = TPCANMsgFD()
-
-        # We configurate the Message.  The ID,
-        # Length of the Data, Message Type and the data
-        #
-        CANMsg.ID = int(self.m_IDTXT.get(), 16)
-        CANMsg.DLC = int(self.m_LengthNUD.get())
-        CANMsg.MSGTYPE = PCAN_MESSAGE_EXTENDED if self.m_ExtendedCHB.get() else PCAN_MESSAGE_STANDARD
-        CANMsg.MSGTYPE |= PCAN_MESSAGE_FD.value if self.m_FDCHB.get() else PCAN_MESSAGE_STANDARD.value
-        CANMsg.MSGTYPE |= PCAN_MESSAGE_BRS.value if self.m_BRSCHB.get() else PCAN_MESSAGE_STANDARD.value
-
-        # If a remote frame will be sent, the data bytes are not important.
-        #
-        if self.m_RemoteCHB.get():
-            CANMsg.MSGTYPE |= PCAN_MESSAGE_RTR.value
-        else:
-            # iLength = self.GetLengthFromDLC(CANMsg.DLC, not(CANMsg.MSGTYPE & PCAN_MESSAGE_FD.value))
-            iLength = GetLengthFromDLC(CANMsg.DLC, not (CANMsg.MSGTYPE & PCAN_MESSAGE_FD.value))
-            # We get so much data as the Len of the message
-            #
-            for i in range(iLength):
-                CANMsg.DATA[i] = int(self.m_DataEdits[i].get(), 16)
-
-        # The message is sent to the configured hardware
-        #
-        return self.m_objPCANBasic.WriteFD(self.m_PcanHandle, CANMsg)
-
-        ## Button btnWrite handler
-
-    ##
-    def btnWrite_Click(self):
-        # Send the message
-        #
-        stsResult = self.WriteFrameFD() if self.m_IsFD else self.WriteFrame()
-
-        # The message was successfully sent
-        #
-        if stsResult == PCAN_ERROR_OK:
-            self.IncludeTextMessage("Message was successfully SENT")
-        else:
-            # An error occurred.  We show the error.
-            #
-            tkMessageBox.showinfo(self.GetFormatedError(stsResult))
 
     ## Button btnReset handler
     ##
@@ -1265,9 +1118,10 @@ class PCANBasicExample(object):
         # If it fails, a error message is shown
         #
         if result != PCAN_ERROR_OK:
-            tkMessageBox.showinfo("Error!", self.GetFormatedTex(result))
-        else:
-            self.IncludeTextMessage("Receive and transmit queues successfully reset")
+            print("Error!", self.GetFormatedTex(result))
+        # else:
+        #     print("Receive and transmit queues successfully reset")
+        #     pass
 
     ## Button btnStatus handler
     ##
@@ -1297,263 +1151,6 @@ class PCANBasicExample(object):
         #
         self.IncludeTextMessage("Status: {0} ({1:X}h)".format(errorName, result))
 
-    ## Combobox cbbChannel handler
-    ##
-    def cbbChannel_SelectedIndexChanged(self, currentValue):
-        # Get the handle from the text being shown
-        #
-        self.m_PcanHandle = self.m_CHANNELS[currentValue]
-        # Determines if the handle belong to a No Plug&Play hardware
-        #
-        if self.m_PcanHandle.value < PCAN_DNGBUS1.value:
-            putItActive = NORMAL
-        else:
-            putItActive = DISABLED
-
-        # Activates/deactivates configuration controls according with the
-        # kind of hardware
-        #
-        self.cbbHwType['state'] = putItActive
-        self.cbbIO['state'] = putItActive
-        self.cbbInterrupt['state'] = putItActive
-
-    ## Combobox cbbParameter handler
-    ##
-    def cbbParameter_SelectedIndexChanged(self, currentValue=None):
-        # Activates/deactivates controls according with the selected
-        # PCAN-Basic parameter
-        #
-        bIsRB = currentValue != 'USBs Device Number' and currentValue != 'Interframe Transmit Delay'
-        if currentValue == 'Interframe Transmit Delay':
-            self.m_DeviceIdOrDelay.set('Delay (ms):')
-        else:
-            self.m_DeviceIdOrDelay.set('Device ID:')
-        root.update_idletasks()
-
-        if bIsRB:
-            self.rdbParamActive['state'] = ACTIVE
-            self.rdbParamInactive['state'] = ACTIVE
-            self.nudDeviceIdOrDelay['state'] = DISABLED
-        else:
-            self.rdbParamActive['state'] = DISABLED
-            self.rdbParamInactive['state'] = DISABLED
-            self.nudDeviceIdOrDelay['state'] = NORMAL
-
-    ## Checkbox chbRemote handler
-    ##
-    def chbRemote_CheckedChanged(self):
-        # Determines the status for the textboxes
-        # according wiht the cehck-status
-        #
-        if self.m_RemoteCHB.get():
-            newStatus = DISABLED
-            iCount = 8
-        else:
-            newStatus = NORMAL
-            iCount = int(self.m_LengthNUD.get())
-
-        self.chbFD['state'] = newStatus
-
-        # If the message is a RTR, no data is sent. The textboxes for data
-        # will be disabled
-        #
-        for i in range(iCount):
-            self.m_CtrlEdits[i]['state'] = newStatus
-
-    def chbFD_CheckedChanged(self):
-        self.chbRemote['state'] = NORMAL if (not self.m_FDCHB.get()) else DISABLED
-        self.chbBRS['state'] = NORMAL if self.m_FDCHB.get() else DISABLED
-        if self.chbBRS['state'] == DISABLED:
-            self.chbBRS.deselect()
-        self.nudLength['to'] = 15 if self.m_FDCHB.get() else 8
-        self.nudLength_ValueChanged()
-
-    ## Checkbox chbFilterExt handler
-    ##
-    def chbFilterExt_CheckedChanged(self):
-        # Determines the maximum value for a ID
-        # according with the Filter-Type
-        #
-        if self.m_FilterExtCHB.get():
-            self.nudIdTo['to'] = 0x1FFFFFFF
-            self.nudIdFrom['to'] = 0x1FFFFFFF
-        else:
-            self.nudIdTo['to'] = 0x7FF
-            self.nudIdFrom['to'] = 0x7FF
-
-        # We check that the maximum value for a selected filter
-        # mode is used
-        #
-        if int(self.m_IdToNUD.get()) > self.nudIdTo['to']:
-            self.m_IdToNUD.set(self.nudIdTo['to'])
-        if int(self.m_IdFromNUD.get()) > self.nudIdFrom['to']:
-            self.m_IdFromNUD.set(self.nudIdFrom['to'])
-
-    ## Checkbox chbFilterExt handler
-    ##
-    def chbCanFD_CheckedChanged(self):
-        self.m_IsFD = self.m_CanFDCHB.get()
-
-        # Determines the maximum value for a ID
-        # according with the Filter-Type
-        #
-        if self.m_CanFDCHB.get():
-            self.m_BaudrateLA.set("Bit rate:")
-            self.m_HwTypeLA.set(" ")
-            self.m_IOPortLA.set(" ")
-            self.m_InterruptLA.set(" ")
-            self.cbbBaudrates.grid_forget()
-            self.cbbHwType.grid_forget()
-            self.cbbIO.grid_forget()
-            self.cbbInterrupt.grid_forget()
-            self.txtBitrate.grid(row=1, column=2, columnspan=4, padx=10, pady=0)
-            self.chbFD.grid(row=3, column=17, padx=0, pady=0, sticky=W)
-            self.chbBRS.grid(row=3, column=18, padx=0, pady=0, sticky=W)
-
-        else:
-            self.m_BaudrateLA.set("Baudrate:")
-            self.m_HwTypeLA.set("Hardware Type:")
-            self.m_IOPortLA.set("I/O Port:")
-            self.m_InterruptLA.set("Interrupt:")
-            self.cbbBaudrates.grid(row=1, column=2, sticky=W)
-            self.cbbHwType.grid(row=1, column=3, sticky=W)
-            self.cbbIO.grid(row=1, column=4, sticky=W)
-            self.cbbInterrupt.grid(row=1, column=5, sticky=W)
-            self.txtBitrate.grid_forget()
-            self.chbFD.grid_forget()
-            self.chbBRS.grid_forget()
-
-        if (self.nudLength['to'] > 8) and (not self.m_IsFD):
-            self.chbFD.deselect()
-            self.chbFD_CheckedChanged()
-
-    ## checkbutton chbShowPeriod handler
-    ##
-    def chbShowPeriod_CheckedChanged(self):
-        with self._lock:
-            self.m_ShowPeriod = self.m_ShowPeriodCHB.get()
-            for msgStatus in self.m_LastMsgsList:
-                msgStatus.ShowingPeriod = self.m_ShowPeriod
-
-    ## Radiobutton rdbTimer handler
-    ##
-    def rdbTimer_CheckedChanged(self):
-        self.m_CanRead = False
-
-        if self.btnRelease['state'] == DISABLED:
-            return
-        # Stop the timer, if running
-        #
-        self.tmrRead.stop()
-
-        # Stop the thread if running
-        #
-        if WINDOWS_EVENT_SUPPORT:
-            if self.m_ReadThread != None:
-                self.m_Terminated = True
-                self.m_ReadThread.join()
-                self.m_ReadThread = None
-
-        self.m_CanRead = True
-
-        # According with the kind of reading, a timer, a thread or a button will be enabled
-        #
-        if self.m_ReadingRDB.get() == 1:
-            self.tmrRead.start()
-
-        if self.m_ReadingRDB.get() == 2:
-            if WINDOWS_EVENT_SUPPORT:
-                self.m_Terminate = False
-                self.m_ReadThread = threading.Thread(None, self.CANReadThreadFunc)
-                self.m_ReadThread.start()
-            else:
-                tkMessageBox.showerror("Module ''win32Event'' not found",
-                                       message="The Win32 Library ('Python Win32 Extensions') is not installed.")
-
-        if (self.btnRelease['state'] != DISABLED) and (self.m_ReadingRDB.get() == 0):
-            self.btnRead['state'] = ACTIVE
-        else:
-            self.btnRead['state'] = DISABLED
-
-            ## Entry txtID OnLeave handler
-
-    ##
-    def txtID_Leave(self, *args):
-        # Calculates the text length and Maximum ID value according
-        # with the Message Typ
-        #
-        if self.m_ExtendedCHB.get():
-            iTextLength = 8
-            uiMaxValue = 0x1FFFFFFF
-        else:
-            iTextLength = 3
-            uiMaxValue = 0x7FF
-
-        try:
-            iValue = int(self.m_IDTXT.get(), 16)
-        except ValueError:
-            iValue = 0
-        finally:
-            # The Textbox for the ID is represented with 3 characters for
-            # Standard and 8 characters for extended messages.
-            # We check that the ID is not bigger than current maximum value
-            #
-            if iValue > uiMaxValue:
-                iValue = uiMaxValue
-            self.m_IDTXT.set("{0:0{1}X}".format(iValue, iTextLength))
-            return True
-
-    ## Entry txtData0 OnLeave handler
-    ##
-    def txtData0_Leave(self, *args):
-        for i in range(8):
-            # The format of all Textboxes Data fields are checked.
-            #
-            self.txtData0_LeaveHelper(self.m_DataEdits[i])
-
-    ## Helper function for the above function
-    #
-    def txtData0_LeaveHelper(self, editVar):
-        try:
-            iValue = int(editVar.get(), 16)
-        except ValueError:
-            iValue = 0
-        finally:
-            # All the Textbox Data fields are represented with 2 characters.
-            # The maximum value allowed is 255 (0xFF)
-            #
-            if iValue > 255:
-                iValue = 255
-            editVar.set("{0:0{1}X}".format(iValue, 2))
-
-    # Spinbutton nudLength handler
-    def nudLength_ValueChanged(self):
-        # iCount = self.GetLengthFromDLC(int(self.m_LengthNUD.get()), not self.m_FDCHB.get())
-        iCount = GetLengthFromDLC(int(self.m_LengthNUD.get()), not self.m_FDCHB.get())
-        self.m_LengthLA.set('%s B.' % iCount)
-
-        # The Textbox Data fields are enabled or disabled according
-        # with the desaired amount of data
-        #
-        for i in range(64):
-            if i < iCount:
-                self.m_CtrlEdits[i]['state'] = NORMAL
-            else:
-                self.m_CtrlEdits[i]['state'] = DISABLED
-
-    def tmrRead_Tick(self):
-        # Checks if in the receive-queue are currently messages for read
-        #
-        self.ReadMessages()
-
-    def tmrDisplayManage(self, active):
-        if (active):
-            self.m_Parent.after(0, self.tmrThreadSafeDisplay_Tick)
-
-    def tmrThreadSafeDisplay_Tick(self):
-        self.DisplayMessages()
-        if (self.m_Connected):
-            self.m_Parent.after(DISPLAY_UPDATE_MS, self.tmrThreadSafeDisplay_Tick)
 
 ###*****************************************************************
 
