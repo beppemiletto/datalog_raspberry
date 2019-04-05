@@ -36,16 +36,16 @@
         col = position of the column in the recorded file
         -->
   <InputType type="PL1012">
-    <ch ph="01" name = "PS_HPH_PCNG_IN"   um="barG" type="PS" offset="-32.50" slope="130" format="int16" col="09" hw="pl1012" >PL1012_CH01</ch>
-    <ch ph="02" name = "PS_MDS_PGAS_OUT"  um="barA" type="PS" offset="-0.6875" slope="6.75" format="int16" col="10" hw="pl1012" >PL1012_CH02</ch>
-    <ch ph="03" name = "PS_MDS_P1S"       um="barG" type="PS" offset="-32.50" slope="130" format="int16" col="11" hw="pl1012" >PL1012_CH03</ch>
-    <ch ph="04" name = "PS_MDS_PTANK"     um="barG" type="PS" offset="-32.50" slope="130" format="int16" col="12" hw="pl1012" >PL1012_CH04</ch>
-    <ch ph="05" name = "TR_MDS_TRNG_IN"   um="degC" type="PT100" offset="-70" slope="76" format="int16" col="13" hw="pl1012" >PL1012_CH05</ch>
-    <ch ph="06" name = "TR_MDS_TRH2O_IN"  um="degC" type="PT100" offset="-70" slope="76" format="int16" col="14" hw="pl1012" >PL1012_CH06</ch>
-    <ch ph="07" name = "TR_MDS_TRH2O_OUT" um="degC" type="PT100" offset="-70" slope="76" format="int16" col="15" hw="pl1012" >PL1012_CH07</ch>
-    <ch ph="08" name = "FM_HPH_QH2O"      um="l/min" type="VFM"  offset="0"    slope="10" format="int16" col="16" hw="pl1012" >PL1012_CH08</ch>
-    <ch ph="09" name = "TR_MDS_TRENV"     um="degC" type="PT100" offset="-70" slope="76" format="int16" col="17" hw="pl1012" >PL1012_CH09</ch>
-    <ch ph="10" name = "TR_MDS_TRBODY"    um="degC" type="PT100" offset="-70" slope="76" format="int16" col="18" hw="pl1012" >PL1012_CH10</ch>
+    <ch ph="01" name = "HPH_PCNG_IN"       um="barG" type="PS" offset="-31.25" slope="125" format="int16" col="09" hw="pl1012" >PL1012_CH01</ch>
+    <ch ph="02" name = "MDS_PTANK"   um="barG" type="PS" offset="-31.25" slope="125" format="int16" col="10" hw="pl1012" >PL1012_CH02</ch>
+    <ch ph="03" name = "MDS_P1S"  um="barG" type="PS" offset="-31.25" slope="125" format="int16" col="11" hw="pl1012" >PL1012_CH03</ch>
+    <ch ph="04" name = "MDS_PGAS_OUT"     um="barA" type="PS" offset="-0.844" slope="7.377049" format="int16" col="12" hw="pl1012" >PL1012_CH04</ch>
+    <ch ph="05" name = "MDS_TRNG_IN" um="degC" type="PT100" offset="-65.18" slope="82.377" format="int16" col="13" hw="pl1012" >PL1012_CH05</ch>
+    <ch ph="06" name = "MDS_TRH2O_IN"   um="degC" type="PT100" offset="-63.21" slope="82.28321" format="int16" col="14" hw="pl1012" >PL1012_CH06</ch>
+    <ch ph="07" name = "MDS_TRH2O_OUT"  um="degC" type="PT100" offset="-66.22" slope="82.28321" format="int16" col="15" hw="pl1012" >PL1012_CH07</ch>
+    <ch ph="08" name = "HPH_QH2O"    um="l/m" type="FVM" offset="0" slope="12" format="int16" col="16" hw="pl1012" >PL1012_CH08</ch>
+    <ch ph="09" name = "MDS_TRENV"      um="degC" type="PT100"  offset="-65.6213"    slope="82.80219" format="int16" col="17" hw="pl1012" >PL1012_CH09</ch>
+    <ch ph="10" name = "MDS_TRBODY"     um="degC" type="PT100" offset="-66.8435" slope="83.35182" format="int16" col="18" hw="pl1012" >PL1012_CH10</ch>
 
     <sn>GT974/096</sn>
   </InputType>

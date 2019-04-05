@@ -9,10 +9,125 @@ import datetime
 import xml.etree.ElementTree
 import csv
 import threading
+import curses
 
+def DisplayConsolle(stdscr, args, data_dict = None):
+
+    # print("args",args)
+    # return
+
+    k = 0
+    cursor_x = 0
+    cursor_y = 0
+
+    # Clear and refresh the screen for a blank canvas
+    if data_dict is None:
+        stdscr.nodelay(True)
+        stdscr.clear()
+        stdscr.refresh()
+
+        # Start colors in curses
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_CYAN, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_BLACK, curses.COLOR_WHITE)
+        # Initialization
+        stdscr.clear()
+        height, width = stdscr.getmaxyx()
+
+    # Loop where k is the last character pressed
+    while (k != ord('q')):
+        if k == curses.KEY_DOWN:
+            cursor_y = cursor_y + 1
+        elif k == curses.KEY_UP:
+            cursor_y = cursor_y - 1
+        elif k == curses.KEY_RIGHT:
+            cursor_x = cursor_x + 1
+        elif k == curses.KEY_LEFT:
+            cursor_x = cursor_x - 1
+
+        cursor_x = max(0, cursor_x)
+        cursor_x = min(width-1, cursor_x)
+
+        cursor_y = max(0, cursor_y)
+        cursor_y = min(height-1, cursor_y)
+
+        # Declaration of strings
+        title = "METATRON - TECHNOLOGY1604 - NATURAL GAS APPLICATION DATALOG"[:width-1]
+        subtitle = "Written by Giuseppe Miletto - Metatron "[:width-1]
+        keystr = "Last key pressed: {}".format(k)[:width-1]
+        statusbarstr = "Logged Samples {} | Key {} | Filename: {: <30}".format(1234567, "ON", args)
+        if k == 0:
+            keystr = "No key press detected..."[:width-1]
+
+        # Centering calculations
+        start_x_title = int((width // 2) - (len(title) // 2) - len(title) % 2)
+        start_x_subtitle = int((width // 2) - (len(subtitle) // 2) - len(subtitle) % 2)
+        start_x_keystr = int((width // 2) - (len(keystr) // 2) - len(keystr) % 2)
+        start_y = int((height // 2) - 2)
+
+        # Rendering some text
+        whstr = "Width: {}, Height: {}".format(width, height)
+        stdscr.addstr(0, 0, whstr, curses.color_pair(1))
+
+        # Render status bar
+        stdscr.attron(curses.color_pair(3))
+        stdscr.addstr(height-1, 0, statusbarstr)
+        stdscr.addstr(height-1, len(statusbarstr), " " * (width - len(statusbarstr) - 1))
+        stdscr.attroff(curses.color_pair(3))
+
+        # Turning on attributes for title
+        stdscr.attron(curses.color_pair(2))
+        stdscr.attron(curses.A_BOLD)
+
+        # Rendering title
+        stdscr.addstr(start_y, start_x_title, title)
+
+        # Turning off attributes for title
+        stdscr.attroff(curses.color_pair(2))
+        stdscr.attroff(curses.A_BOLD)
+
+        # Print rest of text
+        stdscr.addstr(start_y + 1, start_x_subtitle, subtitle)
+        stdscr.addstr(start_y + 3, (width // 2) - 2, '-' * 4)
+        stdscr.addstr(start_y + 5, start_x_keystr, keystr)
+        stdscr.move(cursor_y, cursor_x)
+
+        # Refresh the screen
+        stdscr.refresh()
+
+        # Wait for next input
+        k = stdscr.getch()
+
+
+
+        #
+        #
+        # for i in range(TC08FLOAT_N):
+        #
+        #
+        # for i in range(PL1012BYTE_N):
+        #     print_xy(SCREEN_POS[i][0], SCREEN_POS[i][1] + 12, "{:06d}".format(data.data[i]))
+        # for i in range(PL1012BYTE_N, PL1012BYTE_N + TC08FLOAT_N):
+        #     print_xy(SCREEN_POS[i][0], SCREEN_POS[i][1] + 12,
+        #              "{:04.3f}".format(temperatures.data[i - PL1012BYTE_N]))
+        #
+        # start_time_data = PL1012BYTE_N + TC08FLOAT_N + 1
+        # # print_xy(SCREEN_POS[start_time_data][0], SCREEN_POS[start_time_data][1]+12, "{}".format(i))
+        # print_xy(SCREEN_POS[start_time_data + 1][0], SCREEN_POS[start_time_data + 1][1] + 12,
+        #          "cycle {}/{}".format(cycle, cycles))
+        # print_xy(SCREEN_POS[start_time_data + 2][0], SCREEN_POS[start_time_data + 2][1] + 12,
+        #          "Mean {:09.6f}".format(et_mean.total_seconds()))
+        # print_xy(SCREEN_POS[start_time_data + 3][0], SCREEN_POS[start_time_data + 3][1] + 12,
+        #          "Min {:09.6f}".format(et_min.total_seconds()))
+        # print_xy(SCREEN_POS[start_time_data + 4][0], SCREEN_POS[start_time_data + 4][1] + 12,
+        #          "Max {:09.6f}".format(et_max.total_seconds()))
+        # print_xy(SCREEN_POS[start_time_data + 5][0], SCREEN_POS[start_time_data + 5][1] + 12,
+        #          "Lag corr {:09.6f}".format(lag_correction))
+        #
 
 # Class for thread running a blinking of PowerStatus LED
-class BlinkPowerLed (threading.Thread):
+class BlinkPowerLed(threading.Thread):
     def __init__(self, thread_id, name, counter):
         threading.Thread.__init__(self)
         self.threadID = thread_id
@@ -31,7 +146,7 @@ class BlinkPowerLed (threading.Thread):
 
 
 # Class for thread running a blinking of PowerStatus LED
-class BlinkLoggingLed (threading.Thread):
+class BlinkLoggingLed(threading.Thread):
     def __init__(self, thread_id, name, counter):
         threading.Thread.__init__(self)
         self.threadID = thread_id
@@ -41,7 +156,7 @@ class BlinkLoggingLed (threading.Thread):
     def run(self):
         print("Starting " + self.name)
         while logging_led_status:
-            gpio.output(gpio_logled_out, LED_OFF)
+            gpio.output(gpio_logled_out, LED_ON)
             time.sleep(0.5)
             gpio.output(gpio_logled_out, LED_OFF)
             time.sleep(0.5)
@@ -126,8 +241,8 @@ gpio_pwrltch_out = 20
 gpio.setup(gpio_pwrltch_out, gpio.OUT, initial=gpio.HIGH)   # this the power latch enable output - initialised to HIGH
 
 gpio_logled_out = 21
-logging_led_status = gpio.LOW
-gpio.setup(gpio_logled_out, gpio.OUT, initial=logging_led_status)  # this is the Datalogging running blinking led
+logging_led_status = LED_OFF
+gpio.setup(gpio_logled_out, gpio.OUT, initial=gpio.LOW)  # this is the Datalogging running blinking led
 
 gpio_powerled_out = 19
 gpio.setup(gpio_powerled_out, gpio.OUT, initial=gpio.LOW)   # this is the power state led output
@@ -256,7 +371,7 @@ for col, channel in channels_dict.items():
 csv_file.writerow(head_row)
 
 del head_row, col_head
-
+curses.wrapper(DisplayConsolle, csv_file_name)
 
 # MAIN LOOP OF DATA LOGGING
 first_cycle = True
@@ -265,8 +380,7 @@ while gpio.input(gpio_key_sense) == KEY_ON:
     try:
         #for cycle in range(cycles):
         if first_cycle:
-            gpio.output(gpio_logled_out, True)
-            # Create new threads
+            # Create new threads for blinking the DATALOG RUNNING LED
             thread2 = BlinkLoggingLed(2, "Blink-LogLed", 1)
             logging_led_status = True
             # Start new Threads
@@ -286,7 +400,6 @@ while gpio.input(gpio_key_sense) == KEY_ON:
             first_cycle=False
 
         else:
-            gpio.output(gpio_logled_out, True)
             answ = client_PL1012.recv(24)
 
             answ_tc08 = client_TC08.recv(256)
@@ -304,28 +417,6 @@ while gpio.input(gpio_key_sense) == KEY_ON:
 
             pl1012_data = PL1012DataFormat.parse(answ)
 
-            # for i in range(TC08FLOAT_N):
-            #
-            #
-            # for i in range(PL1012BYTE_N):
-            #     print_xy(SCREEN_POS[i][0], SCREEN_POS[i][1] + 12, "{:06d}".format(data.data[i]))
-            # for i in range(PL1012BYTE_N, PL1012BYTE_N + TC08FLOAT_N):
-            #     print_xy(SCREEN_POS[i][0], SCREEN_POS[i][1] + 12,
-            #              "{:04.3f}".format(temperatures.data[i - PL1012BYTE_N]))
-            #
-            # start_time_data = PL1012BYTE_N + TC08FLOAT_N + 1
-            # # print_xy(SCREEN_POS[start_time_data][0], SCREEN_POS[start_time_data][1]+12, "{}".format(i))
-            # print_xy(SCREEN_POS[start_time_data + 1][0], SCREEN_POS[start_time_data + 1][1] + 12,
-            #          "cycle {}/{}".format(cycle, cycles))
-            # print_xy(SCREEN_POS[start_time_data + 2][0], SCREEN_POS[start_time_data + 2][1] + 12,
-            #          "Mean {:09.6f}".format(et_mean.total_seconds()))
-            # print_xy(SCREEN_POS[start_time_data + 3][0], SCREEN_POS[start_time_data + 3][1] + 12,
-            #          "Min {:09.6f}".format(et_min.total_seconds()))
-            # print_xy(SCREEN_POS[start_time_data + 4][0], SCREEN_POS[start_time_data + 4][1] + 12,
-            #          "Max {:09.6f}".format(et_max.total_seconds()))
-            # print_xy(SCREEN_POS[start_time_data + 5][0], SCREEN_POS[start_time_data + 5][1] + 12,
-            #          "Lag corr {:09.6f}".format(lag_correction))
-            gpio.output(gpio_logled_out, False)
             cycle +=1
             t_now = datetime.datetime.now()
             et = t_now -t_old
@@ -411,8 +502,10 @@ time.sleep(2.5)
 power_latch = False
 
 thread1.join()
+thread2.join()
+
 time.sleep(2.5)
-print("gpio power latch led set False, pin {}".format(gpio_pwrltch_out))
+print("gpio power latch DISABLE, pin {}".format(gpio_pwrltch_out))
 
 gpio.output(gpio_pwrltch_out, LED_OFF)
 
