@@ -15,16 +15,16 @@ CWD_PATH = getcwd()
 
 # Socket dir end filenames
 SKT_PATH = path.join(CWD_PATH,"sockets")
-SKT_PL1000 = "PL1000"
-SKT_TC08 = "TC08"
-SKT_PEAK = "PEAK"
+SKT_PL1000 = "PL1000.socket"
+SKT_TC08 = "TC08.socket"
+SKT_PEAK = "PEAK.socket"
 
 # Hardware devices sn and enable
 
 HW_SN_EN = {
-    "PL1000": {"sn": "GT974/096", "en": True, "socket_file": SKT_PL1000 +"096.socket"},
-    "TC08": {"sn": "A0061/874", "en": True , "socket_file": SKT_TC08 +"874.socket"},
-    "PEAK": {"sn": "PEAK", "en": True,  "socket_file": SKT_PEAK+".socket"},
+    "PL1000": {"sn": "GT974/096", "en": True, "socket_file": SKT_PL1000},
+    "TC08": {"sn": "A0061/874", "en": True , "socket_file": SKT_TC08},
+    "PEAK": {"sn": "PEAK", "en": True,  "socket_file": SKT_PEAK},
 
 }
 

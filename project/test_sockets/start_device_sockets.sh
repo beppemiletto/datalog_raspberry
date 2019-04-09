@@ -1,40 +1,28 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
-echo "Starting Pico and Peak Hardware's sockets processes for Datalogger"
-echo "\nStarting Picolo PL1012"
+echo "Starting Pico and Peak Hardware's sockets processes for Datalogger \n"
 
-cd ~/datalog_raspberry/project/sockets/
+cd /home/pi/datalog_raspberry/project/sockets/
 
-~/pico_sdk/pl1000/linux-build-files/pl1000Con PL1000096.socket &
+echo "\n\nStarting Picolog PL1012"
+/home/pi/pico_sdk/pl1000/linux-build-files/pl1000Con PL1000.socket &
+sleep 5
 
-echo "\n\nStarting Picolo PL1012"
-
-sleep 3.5s
-
-~/pico_sdk/usbtc08/linux-build-files/usbtc08Con TC08874.socket &
+echo "\n\nStarting Picolog TC08"
+/home/pi/pico_sdk/usbtc08/linux-build-files/usbtc08Con TC08.socket &
+sleep 4
 
 echo "\n\nStarting PCAN socket"
-# source ~/venv/bin/activate
 
 
-cd ~/datalog_raspberry/project/
-
-pwd
+cd /home/pi/datalog_raspberry/project/
 
 python3 test_sockets/PCAN_server_socket.py &
 
 
-sleep 3.5
+sleep 3
+
+echo "All socket launched."
 
 
-
-cd ~/datalog_raspberry/project/test_sockets/
-
-pwd
-
-
-echo "All socket created"
-##python RPD_client.py
-
-
-
+exit 0

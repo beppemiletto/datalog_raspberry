@@ -256,12 +256,12 @@ class PCANBasicExample(object):
     ## Initialize Unix Socket
     ##
     def InitializeSocket(self):
-        if os.path.exists(os.path.join(SKT_PATH,SKT_PEAK+'.socket')):
-            os.remove(os.path.join(SKT_PATH,SKT_PEAK+'.socket'))
+        if os.path.exists(os.path.join(SKT_PATH,SKT_PEAK)):
+            os.remove(os.path.join(SKT_PATH,SKT_PEAK))
 
-        print("Opening socket...{}".format(os.path.join(SKT_PATH,SKT_PEAK+'.socket')))
+        print("Opening socket...{}".format(os.path.join(SKT_PATH,SKT_PEAK)))
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        self.socket_file = os.path.join(SKT_PATH,SKT_PEAK+'.socket')
+        self.socket_file = os.path.join(SKT_PATH,SKT_PEAK)
         self.server.bind(self.socket_file)
 
     ## Client - Server Acknoledge Unix Socket

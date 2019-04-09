@@ -477,6 +477,7 @@ if __name__ == '__main__':
         finally:
             print("Answer from server PL1012 socket: {}".format(answ))
             print("Ready.")
+            time.sleep(1)
             # print("Ctrl-C to quit.")
             # print("Sending 'DONE' shuts down the server and quits.")
 
@@ -497,8 +498,7 @@ if __name__ == '__main__':
         finally:
             print("Answer from server TC08 socket: {}".format(answ))
             print("Ready.")
-            print("Ctrl-C to quit.")
-            print("Sending 'DONE' shuts down the server and quits.")
+            time.sleep(1)
 
     # Create PCAN socket client
     if HW_SN_EN["PEAK"]["en"]:
@@ -517,10 +517,8 @@ if __name__ == '__main__':
         finally:
             print("Answer from server PEAK socket: {}".format(answ))
             print("Ready.")
-            print("Ctrl-C to quit.")
-            print("Sending 'DONE' shuts down the server and quits.")
+            time.sleep(1)
 
-        _ = os.system("clear")
         sys.stdout.flush()
 
     if total_connection_req_det != total_connection_req_conf:
