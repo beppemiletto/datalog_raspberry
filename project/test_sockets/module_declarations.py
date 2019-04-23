@@ -40,7 +40,7 @@ PL1012BYTE_N = 12
 PL1012DataFormat = Struct("data" / Array(PL1012BYTE_N, Int16ul) )
 TC08FLOAT_N = 9
 TC08DataFormat = Struct("data" / Array(TC08FLOAT_N,Float32l))
-PEAK_MSGS = 6
+PEAK_MSGS = 25
 CANREAD_TIMEOUT = 0.600000
 PEAKDataFormat = Array(PEAK_MSGS, Sequence(PaddedString(11, 'utf-8'), Array(8, Int8ub)))
 

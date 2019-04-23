@@ -23,13 +23,24 @@ def DisplayConsole(stdscr, args):
     channels_dict = dict()
     data_row = [None]
     for type in root:
-        print(type.tag, '<-- child.tag | child.attrib --->', type.attrib)
+        # print(type.tag, '<-- child.tag | child.attrib --->', type.attrib)
         if type.tag == 'DatalogFilenamePrefix':
             FILENAME_PREFIX = type.attrib['prefix']
         for ch in type.iter('ch'):
             channels_dict[ch.attrib['col']] = ch.attrib
             data_row.append(None)
-            print(type.attrib['type'], ' -->  Analog input channels --> ', ch.attrib)
+            # print(type.attrib['type'], ' -->  Analog input channels --> ', ch.attrib)
+
+            # Initialize the PGN to be read by PEAK Can device
+            if type.attrib['type'] == 'PCAN':
+                client_PEAK.send(b'C')
+                new_PGN = ch.attrib['pgn'].encode('utf-8')
+                # print("sending PGN {} to socket".format(new_PGN))
+                client_PEAK.send(new_PGN)
+                time.sleep(0.2)
+                del new_PGN
+
+
 
     del root, tree, type, ch
     # END OF CHANNELS CONFIG PARSER
@@ -106,10 +117,10 @@ def DisplayConsole(stdscr, args):
 
     title = "METATRON - TECHNOLOGY1604 - NATURAL GAS APPLICATION DATALOG"[:width - 1]
     subtitle = "Written by Giuseppe Miletto - Metatron "[:width - 1]
-    # Centering calculations
-    start_x_title = int((width // 2) - (len(title) // 2) - len(title) % 2)
-    start_x_subtitle = int((width // 2) - (len(subtitle) // 2) - len(subtitle) % 2)
-    start_y = int((height // 2) - 2)
+    # # Centering calculations
+    # start_x_title = int((width // 2) - (len(title) // 2) - len(title) % 2)
+    # start_x_subtitle = int((width // 2) - (len(subtitle) // 2) - len(subtitle) % 2)
+    # start_y = int((height // 2) - 2)
 
     # Turning on attributes for title
     stdscr.attron(curses.color_pair(2))
@@ -167,10 +178,11 @@ def DisplayConsole(stdscr, args):
                 answPEAK = client_PEAK.recv(2048)
 
                 CAN_row_Data = []
-                CAN_row_Data_parser = csv.reader(answPEAK.decode().split('\n'), delimiter=',')
-                for value in CAN_row_Data_parser:
-                    CAN_row_Data.append(value)
-                    # print('\t'.join(value))
+                if answPEAK.decode() != 'KO':
+                    CAN_row_Data_parser = csv.reader(answPEAK.decode().split('\n'), delimiter=',')
+                    for value in CAN_row_Data_parser:
+                        CAN_row_Data.append(value)
+                        # print('\t'.join(value))
 
                 temperatures_data = TC08DataFormat.parse(answ_tc08)
 
@@ -180,8 +192,6 @@ def DisplayConsole(stdscr, args):
                 t_now = datetime.datetime.now()
                 et = t_now - t_old
                 iet += et
-                et_mean = iet / cycle
-                # print("SENT {} on iteration {}: et_mean={}, et_max= {}  et_min= {}".format(x, i, et_mean.total_seconds(),et_max.total_seconds(), et_min.total_seconds()))
                 t_old = t_now
                 lag_time = et.total_seconds() - bt
                 lag_correction += lag_time / 10
@@ -223,9 +233,9 @@ def DisplayConsole(stdscr, args):
 
                 for idx, datum in enumerate(data_row):
                     if datum is not None:
-                        data_txt = "{: >10}".format(datum)
+                        data_txt = "{: >6}".format(datum)
                     else:
-                        data_txt = "{: >10}".format("data N.A.")
+                        data_txt = "{: >6}".format("N.A.")
                     # Render data labels
                     stdscr.attron(curses.color_pair(1))
                     stdscr.addstr(data_coord[idx][2], data_coord[idx][3], data_txt)
@@ -259,52 +269,7 @@ def DisplayConsole(stdscr, args):
 
     csv_file_header.close()
 
-        # if k == curses.KEY_DOWN:
-        #     cursor_y = cursor_y + 1
-        # elif k == curses.KEY_UP:
-        #     cursor_y = cursor_y - 1
-        # elif k == curses.KEY_RIGHT:
-        #     cursor_x = cursor_x + 1
-        # elif k == curses.KEY_LEFT:
-        #     cursor_x = cursor_x - 1
-        #
-        # cursor_x = max(0, cursor_x)
-        # cursor_x = min(width-1, cursor_x)
-        #
-        # cursor_y = max(0, cursor_y)
-        # cursor_y = min(height-1, cursor_y)
 
-        # Declaration of strings
-
-
-
-
-
-
-        #
-        #
-        # for i in range(TC08FLOAT_N):
-        #
-        #
-        # for i in range(PL1012BYTE_N):
-        #     print_xy(SCREEN_POS[i][0], SCREEN_POS[i][1] + 12, "{:06d}".format(data.data[i]))
-        # for i in range(PL1012BYTE_N, PL1012BYTE_N + TC08FLOAT_N):
-        #     print_xy(SCREEN_POS[i][0], SCREEN_POS[i][1] + 12,
-        #              "{:04.3f}".format(temperatures.data[i - PL1012BYTE_N]))
-        #
-        # start_time_data = PL1012BYTE_N + TC08FLOAT_N + 1
-        # # print_xy(SCREEN_POS[start_time_data][0], SCREEN_POS[start_time_data][1]+12, "{}".format(i))
-        # print_xy(SCREEN_POS[start_time_data + 1][0], SCREEN_POS[start_time_data + 1][1] + 12,
-        #          "cycle {}/{}".format(cycle, cycles))
-        # print_xy(SCREEN_POS[start_time_data + 2][0], SCREEN_POS[start_time_data + 2][1] + 12,
-        #          "Mean {:09.6f}".format(et_mean.total_seconds()))
-        # print_xy(SCREEN_POS[start_time_data + 3][0], SCREEN_POS[start_time_data + 3][1] + 12,
-        #          "Min {:09.6f}".format(et_min.total_seconds()))
-        # print_xy(SCREEN_POS[start_time_data + 4][0], SCREEN_POS[start_time_data + 4][1] + 12,
-        #          "Max {:09.6f}".format(et_max.total_seconds()))
-        # print_xy(SCREEN_POS[start_time_data + 5][0], SCREEN_POS[start_time_data + 5][1] + 12,
-        #          "Lag corr {:09.6f}".format(lag_correction))
-        #
 
 # Class for thread running a blinking of PowerStatus LED
 class BlinkPowerLed(threading.Thread):
@@ -520,6 +485,7 @@ if __name__ == '__main__':
             time.sleep(1)
 
         sys.stdout.flush()
+        # sending list of CAN messages to be sniffed from CAN link
 
     if total_connection_req_det != total_connection_req_conf:
         print("One or more connection ({}) to defined sockets of devices is missing. Exit.".format(total_connection_req_conf-total_connection_req_det))

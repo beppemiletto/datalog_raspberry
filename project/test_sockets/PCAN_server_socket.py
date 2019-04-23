@@ -24,8 +24,7 @@ import sys
 import socket
 import os
 import datetime
-from module_declarations import SKT_PATH, SKT_PEAK, PEAK_MSGS, PEAKDataFormat, CANREAD_TIMEOUT
-
+from module_declarations import SKT_PATH, SKT_PEAK, PEAKDataFormat, CANREAD_TIMEOUT
 
 
 TCL_DONT_WAIT           = 1<<1
@@ -73,6 +72,7 @@ class PCANBasicExample(object):
     def __init__(self):
 
         # Example's configuration
+
         self.InitializeBasicComponents()
         self.InitializeSocket()
         self.ConfigureLogFile()
@@ -102,7 +102,8 @@ class PCANBasicExample(object):
         while self.exit < 0:
             time_start = time.time()
             elapsedtime = time.time()-time_start
-            while (not (stsResult & PCAN_ERROR_QRCVEMPTY)) and (len(self.m_LastMsgsList) < PEAK_MSGS) and elapsedtime < CANREAD_TIMEOUT:
+            msg_count=0
+            while (not (stsResult & PCAN_ERROR_QRCVEMPTY)) and (len(self.m_LastMsgsList) < self.peak_msgs) and elapsedtime < CANREAD_TIMEOUT:
                 result = self.m_objPCANBasic.Read(self.m_PcanHandle)
                 if result[0] == PCAN_ERROR_OK:
                     ProcessingMessage = result[1:]
@@ -121,15 +122,30 @@ class PCANBasicExample(object):
                     found = False
                     for (ID,DATA) in self.m_LastMsgsList:
                         if ID == newMsg.ID:
-                            found= True
+                            found = True
                     if not found:
-                        #TODO select message incoming from list in xml config. Discarge unuseful messages
-                        self.m_LastMsgsList.append((theMsg.ID, theMsg.DATA))
-                    time.sleep(0.010)
+                        for b_pgn in self.msg_PGNs:
+                            pgn = b_pgn.decode('utf-8')
+                            if pgn in hex(theMsg.ID).upper():
+                                self.m_LastMsgsList.append((theMsg.ID, theMsg.DATA))
+                    msg_count +=1
+                    time.sleep(0.02)
                 elapsedtime = time.time()-time_start
+                # print("{:<8}\r{} - msg read = {}".format(""*70, elapsedtime, msg_count), end="\r")
+            # print("\n")
 
             response = ""
+            # print("Good messages read ={}".format(len(self.m_LastMsgsList)))
             for msg in self.m_LastMsgsList:
+                # print("{:>10},{},{},{},{},{},{},{},{}\n".format(hex(msg[0]), msg[1][0],
+                #                                           msg[1][1],
+                #                                           msg[1][2],
+                #                                           msg[1][3],
+                #                                           msg[1][4],
+                #                                           msg[1][5],
+                #                                           msg[1][6],
+                #                                           msg[1][7],
+                #                                           ))
                 response = response+"{:>10},{},{},{},{},{},{},{},{}\n".format(hex(msg[0]),msg[1][0],
                                                                     msg[1][1],
                                                                     msg[1][2],
@@ -143,12 +159,21 @@ class PCANBasicExample(object):
             try:
                 i = 0
                 answ = self.conn.recv(1)
+                # print("received command {}".format(answ))
                 if answ == b'S':
-                    self.conn.send(response.encode('utf-8'))
+                    if response == "":
+                        self.conn.send("KO".encode('utf-8'))
+                    else:
+                        self.conn.send(response.encode('utf-8'))
                     self.btnReset_Click()
                 elif answ == b'X':
                     print("Termination request received from client - Shutting down")
                     return
+                elif answ == b'C':
+                    # msg_pgns update (channels config before starting sample loop)
+                    # print("receiving new PGN for the list: ")
+                    newPGN = self.conn.recv(4)
+                    self.InsertMsgEntry(newPGN)
                 else:
                     continue
             except SystemExit:
@@ -248,7 +273,9 @@ class PCANBasicExample(object):
 
         self.m_FilteringRDB = 1
 
-        self.m_USBValid_counter = 8 # number of valid messages to be read before validate the USB device sensed
+        self.m_USBValid_counter = 8     # number of valid messages to be read before validate the USB device sensed
+        self.msg_PGNs = []              # initialize the list recipient for the messages requested by client
+        self.peak_msgs = 0              # initialize the number of messages to be read by peak adapter
 
 
 
@@ -268,13 +295,14 @@ class PCANBasicExample(object):
     ##
     def AckSocket(self):
         print("Peak Socket waiting for client connection ...")
-        self.server.listen(1)
+        self.server.listen(2)
         print('-> server listening for client ')
         self.conn, self.addr = self.server.accept()
         print('--> Sending answer to client')
         response = self.cbbChannel[-1].encode()
         self.conn.send(response)
         print("Sent {} over socket".format(response))
+
 
 
     ## Configures the Debug-Log file of PCAN-Basic
@@ -290,26 +318,7 @@ class PCANBasicExample(object):
         #
         self.m_objPCANBasic.SetValue(PCAN_NONEBUS, PCAN_LOG_CONFIGURE, iBuffer)
 
-    ## Configures the PCAN-Trace file for a PCAN-Basic Channel
-    ##
-    def ConfigureTraceFile(self):
-        # Configure the maximum size of a trace file to 5 megabytes
-        #
-        iBuffer = 5
-        stsResult = self.m_objPCANBasic.SetValue(self.m_PcanHandle, PCAN_TRACE_SIZE, iBuffer)
-        if stsResult != PCAN_ERROR_OK:
-            self.IncludeTextMessage(self.GetFormatedError(stsResult))
 
-        # Configure the way how trace files are created:
-        # * Standard name is used
-        # * Existing file is ovewritten,
-        # * Only one file is created.
-        # * Recording stopts when the file size reaches 5 megabytes.
-        #
-        iBuffer = TRACE_FILE_SINGLE | TRACE_FILE_OVERWRITE
-        stsResult = self.m_objPCANBasic.SetValue(self.m_PcanHandle, PCAN_TRACE_CONFIGURE, iBuffer)
-        if stsResult != PCAN_ERROR_OK:
-            self.IncludeTextMessage(self.GetFormatedError(stsResult))
 
     ## Help Function used to get an error as text
     ##
@@ -408,31 +417,26 @@ class PCANBasicExample(object):
                     self.lstMessages.insert(msgStatus.Position, text=self.GetMsgString(msgStatus))
                     msgStatus.MarkedAsUpdated = False
 
-    ## Inserts a new entry for a new message in the Message-ListView
+    ## Inserts a new entry for a new message PGN in the Message PGNs list
     ##
-    def InsertMsgEntry(self, newMsg, timeStamp):
-        # Format the new time information
-        #
-        with self._lock:
-            # The status values associated with the new message are created
-            #
-            msgStsCurrentMsg = MessageStatus(newMsg, timeStamp, len(self.m_LastMsgsList))
-            msgStsCurrentMsg.MarkedAsInserted = False
-            msgStsCurrentMsg.ShowingPeriod = self.m_ShowPeriod
-            self.m_LastMsgsList.append(msgStsCurrentMsg)
+    def InsertMsgEntry(self, newPGNs):
+        if not(newPGNs in self.msg_PGNs):
+            self.msg_PGNs.append(newPGNs)
+            self.peak_msgs = len(self.msg_PGNs)
+            # print("All PGN: {} - total PGNs = {}".format(self.msg_PGNs,len(self.msg_PGNs)))
 
-    def ProcessMessageFD(self, *args):
-        with self._lock:
-            # Split the arguments. [0] TPCANMsgFD, [1] TPCANTimestampFD
-            #
-            theMsg = args[0][0]
-            itsTimeStamp = args[0][1]
-
-            for msg in self.m_LastMsgsList:
-                if (msg.CANMsg.ID == theMsg.ID) and (msg.CANMsg.MSGTYPE == theMsg.MSGTYPE):
-                    msg.Update(theMsg, itsTimeStamp)
-                    return
-            self.InsertMsgEntry(theMsg, itsTimeStamp)
+    # def ProcessMessageFD(self, *args):
+    #     with self._lock:
+    #         # Split the arguments. [0] TPCANMsgFD, [1] TPCANTimestampFD
+    #         #
+    #         theMsg = args[0][0]
+    #         itsTimeStamp = args[0][1]
+    #
+    #         for msg in self.m_LastMsgsList:
+    #             if (msg.CANMsg.ID == theMsg.ID) and (msg.CANMsg.MSGTYPE == theMsg.MSGTYPE):
+    #                 msg.Update(theMsg, itsTimeStamp)
+    #                 return
+    #         self.InsertMsgEntry(theMsg, itsTimeStamp)
 
     ## Processes a received message, in order to show it in the Message-ListView
     ##
@@ -565,10 +569,10 @@ class PCANBasicExample(object):
                     self.IncludeTextMessage('The bitrate being used is different than the given one')
                     self.IncludeTextMessage('******************************************************')
                     result = PCAN_ERROR_OK
-            else:
-                # Prepares the PCAN-Basic's PCAN-Trace file
-                #
-                self.ConfigureTraceFile()
+            # else:
+            #     # Prepares the PCAN-Basic's PCAN-Trace file
+            #     #
+            #     self.ConfigureTraceFile()
 
             # Sets the connection status of the form
             #
