@@ -72,7 +72,7 @@
     <ch signal_n="05" pgn="FEEE" name = "Engine_Oil_Temperature" bits="16" byte="3" bit_offset = "0" offset="-273" um="degC" resolution="0.03125" col="23" hw="pcan" >CAN04</ch>
     <ch signal_n="06" pgn="FEA4" name = "Engine_ECU_Temperature" bits="16" byte="3" bit_offset = "0" offset="-273" um="degC" resolution="0.03125" col="24" hw="pcan" >CAN06</ch>
     <ch signal_n="07" pgn="F004" name = "Engine_Speed" bits="16" byte="4" bit_offset = "0" offset="0" um="rpm" resolution="0.125" col="25" hw="pcan" >CAN07</ch>
-    <ch signal_n="08" pgn="F004" name = "Engine_Demand_Percent_Torque" bits="8" byte="8" bit_offset = "0" offset="0" um="perc" resolution="1" col="26" hw="pcan" >CAN08</ch>
+    <ch signal_n="08" pgn="F004" name = "Engine_Demand_Percent_Torque" bits="8" byte="8" bit_offset = "0" offset="-124" um="perc" resolution="1" col="26" hw="pcan" >CAN08</ch>
     <ch signal_n="09" pgn="FEF6" name = "Engine_Boost_Pressure" bits="8" byte="2" bit_offset = "0" offset="0" um="kPa" resolution="2" col="27" hw="pcan" >CAN09</ch>
     <ch signal_n="10" pgn="FEF6" name = "Engine_Intake_Manifold_Temperature" bits="8" byte="3" bit_offset = "0" offset="-40" um="degC" resolution="1" col="28" hw="pcan" >CAN10</ch>
     <ch signal_n="11" pgn="FEF6" name = "Engine_Intake_Manifold_Pressure" bits="8" byte="4" bit_offset = "0" offset="0" um="kPa" resolution="2" col="29" hw="pcan" >CAN11</ch>
