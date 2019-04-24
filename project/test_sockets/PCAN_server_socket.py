@@ -425,38 +425,27 @@ class PCANBasicExample(object):
             self.peak_msgs = len(self.msg_PGNs)
             # print("All PGN: {} - total PGNs = {}".format(self.msg_PGNs,len(self.msg_PGNs)))
 
-    # def ProcessMessageFD(self, *args):
+
+
+    ## Processes a received message, in order to show it in the Message-ListView
+    ##
+    # def ProcessMessage(self, *args):
     #     with self._lock:
-    #         # Split the arguments. [0] TPCANMsgFD, [1] TPCANTimestampFD
+    #         # Split the arguments. [0] TPCANMsg, [1] TPCANTimestamp
     #         #
     #         theMsg = args[0][0]
     #         itsTimeStamp = args[0][1]
     #
-    #         for msg in self.m_LastMsgsList:
-    #             if (msg.CANMsg.ID == theMsg.ID) and (msg.CANMsg.MSGTYPE == theMsg.MSGTYPE):
-    #                 msg.Update(theMsg, itsTimeStamp)
-    #                 return
-    #         self.InsertMsgEntry(theMsg, itsTimeStamp)
-
-    ## Processes a received message, in order to show it in the Message-ListView
-    ##
-    def ProcessMessage(self, *args):
-        with self._lock:
-            # Split the arguments. [0] TPCANMsg, [1] TPCANTimestamp
-            #
-            theMsg = args[0][0]
-            itsTimeStamp = args[0][1]
-
-            newMsg = TPCANMsgFD()
-            newMsg.ID = theMsg.ID
-            newMsg.DLC = theMsg.LEN
-            for i in range(8 if (theMsg.LEN > 8) else theMsg.LEN):
-                newMsg.DATA[i] = theMsg.DATA[i]
-            newMsg.MSGTYPE = theMsg.MSGTYPE
-            newTimestamp = TPCANTimestampFD()
-            newTimestamp.value = (
-                        itsTimeStamp.micros + 1000 * itsTimeStamp.millis + 0x100000000 * 1000 * itsTimeStamp.millis_overflow)
-            self.ProcessMessageFD([newMsg, newTimestamp])
+    #         newMsg = TPCANMsgFD()
+    #         newMsg.ID = theMsg.ID
+    #         newMsg.DLC = theMsg.LEN
+    #         for i in range(8 if (theMsg.LEN > 8) else theMsg.LEN):
+    #             newMsg.DATA[i] = theMsg.DATA[i]
+    #         newMsg.MSGTYPE = theMsg.MSGTYPE
+    #         newTimestamp = TPCANTimestampFD()
+    #         newTimestamp.value = (
+    #                     itsTimeStamp.micros + 1000 * itsTimeStamp.millis + 0x100000000 * 1000 * itsTimeStamp.millis_overflow)
+    #         self.ProcessMessageFD([newMsg, newTimestamp])
 
     ## Thread-Function used for reading PCAN-Basic messages
     ##

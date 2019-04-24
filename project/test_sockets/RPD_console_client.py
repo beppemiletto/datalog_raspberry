@@ -37,7 +37,7 @@ def DisplayConsole(stdscr, args):
                 new_PGN = ch.attrib['pgn'].encode('utf-8')
                 # print("sending PGN {} to socket".format(new_PGN))
                 client_PEAK.send(new_PGN)
-                time.sleep(0.2)
+                time.sleep(0.010)
                 del new_PGN
 
 
